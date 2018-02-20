@@ -4,10 +4,7 @@
 */
 class Network {
     constructor(layers, learnRate = 0.3) {
-        let i,
-            leftLayer,
-            rightLayer;
-
+        // The layers this network will manage
         this.layers = layers;
 
         // Refs to set feature and target data on
@@ -25,12 +22,13 @@ class Network {
     //// of the previous layer recursively through a set of layers
     // layers: The layers to connect
     connectLayers(layers) {
-        let leftLayer,
+        let i,
+            leftLayer,
             rightLayer,
             layerLength = layers.length;
 
         // Iterate over the layers
-        for (let i = 1; i < layerLength; i++) {
+        for (i = 1; i < layerLength; i++) {
             // Get the left and right layers in the connection
             leftLayer = layers[i - 1];
             rightLayer = layers[i];
