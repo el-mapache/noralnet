@@ -1,3 +1,7 @@
+/*
+    A helper structure that manages setting features and targets, as well
+    as propagating data through the network
+*/
 class Network {
     constructor(layers, learnRate = 0.3) {
         let i,
