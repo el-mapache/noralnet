@@ -1,3 +1,7 @@
+/*
+    A Neuron holds an activation value that is derived from its
+    connecting neurons' activation and the weight of those connections
+*/
 class Neuron {
     constructor(value) {
         // Set the activation value if passed in, either init to random
