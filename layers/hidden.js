@@ -1,39 +1,72 @@
+/*
+    A Layer manages an array of neurons, and handles feeding data forward
+    to the next layer (adjusting activation values) and propagating data
+    backwards (adjusting weights / biases)
+*/
 class Layer {
     constructor(neurons) {
+        // The neurons to manage
         this.neurons = neurons;
 
+        // Pointers to traverse forwards and backwards through layers
         this.next = null;
         this.previous = null;
     }
 
+    //// Squash an activation into a logarithmic function of -1 to 1
+    // activationValue: A neuron's activation value
+    static sigmoid(activationValue) {
+        return 1.0 / (1.0 + Math.exp(-activationValue));
+    }
+
+    //// Grab the derivative to resolve error adjustment over the sigmoid?
+    // squashedValue: The sigmoid(activation) value
+    static sigmoidDerivative(squashedValue) {
+        return squashedValue * (1 - squashedValue);
+    }
+
+    //// Connect a layer to this one
+    //   previousLayer: The layer to our left that we want to connect
     connect(previousLayer) {
+        // Iterate through the neurons on this layer
         this.neurons.forEach((currentLayerNeuron) => {
+            // Iterate through the neurons in the connecting layer
             previousLayer.neurons.forEach((previousLayerNeuron) => {
+                // Create a new connection between them with a random weight
                 const connection = new Connection(previousLayerNeuron, currentLayerNeuron, Math.random() - 0.5);
 
+                // Set them as their respective input / output entries
                 currentLayerNeuron.connections.input.push(connection);
                 previousLayerNeuron.connections.output.push(connection);
             });
         });
 
+        // Set a pointer to allow layer traversal
         previousLayer.next = this;
         this.previous = previousLayer;
     }
 
+    //// Propagate value of inputs through the neurons in the layer
     feedForward() {
         let sum;
 
+        // Iterate over this layer's neurons
         this.neurons.forEach((currentLayerNeuron) => {
             sum = 0.0;
 
+            // Itearte over the neuron's input connections
             currentLayerNeuron.connections.input.forEach((inputConnection) => {
+                // Add the signals up
                 sum += inputConnection.from.activation * inputConnection.weight;
             });
 
-            currentLayerNeuron.activation = currentLayerNeuron.sigmoid(sum + currentLayerNeuron.bias);
+            // Squash our activation into -1 to 1
+            currentLayerNeuron.activation = Layer.sigmoid(sum + currentLayerNeuron.bias);
         });
     }
 
+    //// Propagate adjustments backwards through the neurons in a layer
+    // learnRate: The factor to apply to calculating error (how much to change)
     backPropagate(learnRate) {
         let inputNeuron,
             outputNeuron;
@@ -50,7 +83,7 @@ class Layer {
             });
 
             // Get the derivative of the total error
-            currentLayerNeuron.error *= currentLayerNeuron.sigmoidDerivative(currentLayerNeuron.activation)
+            currentLayerNeuron.error *= Layer.sigmoidDerivative(currentLayerNeuron.activation)
 
             // Iterate through the input neurons to adjust weights
             currentLayerNeuron.connections.input.forEach((inputConnection) => {
@@ -62,52 +95,6 @@ class Layer {
             });
 
             // Set the bias
-            currentLayerNeuron.bias += (learnRate * currentLayerNeuron.error);
-        });
-    }
-}
-
-class InputLayer extends Layer {
-    feedForward() {
-        this.neurons.forEach((currentLayerNeuron, i) => {
-            currentLayerNeuron.activation = this.features[i];
-        });
-    }
-
-    backPropagate() {
-        return;
-    }
-
-    setFeatures(features) {
-        this.features = features;
-    }
-}
-
-class OutputLayer extends Layer {
-    setTargets(targets) {
-        this.targets = targets;
-    }
-
-    backPropagate(learnRate) {
-        let targetValue,
-            inputNeuron,
-            neuronActivation;
-
-        this.neurons.forEach((currentLayerNeuron, i) => {
-            targetValue = this.targets[i];
-            neuronActivation = currentLayerNeuron.activation;
-
-            currentLayerNeuron.error = (
-                (targetValue - neuronActivation) *
-                currentLayerNeuron.sigmoidDerivative(neuronActivation)
-            );
-
-            currentLayerNeuron.connections.input.forEach((inputConnection) => {
-                inputNeuron = inputConnection.from;
-
-                inputConnection.weight += (learnRate * currentLayerNeuron.error * inputNeuron.activation);
-            });
-
             currentLayerNeuron.bias += (learnRate * currentLayerNeuron.error);
         });
     }

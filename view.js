@@ -1,4 +1,8 @@
 class View {
+    static clearNetwork() {
+        document.getElementById('body').innerHTML = '';
+    }
+    
     static displayLayer(layer, index) {
         const verticalOffset = 5;
         const horizontalOffset = 5;
