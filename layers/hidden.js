@@ -19,7 +19,7 @@ class Layer {
         return 1.0 / (1.0 + Math.exp(-activationValue));
     }
 
-    //// Grab the derivative to resolve error adjustment over the sigmoid?
+    //// Calculate the derivative of the activation to apply to error
     // squashedValue: The sigmoid(activation) value
     static sigmoidDerivative(squashedValue) {
         return squashedValue * (1 - squashedValue);
@@ -82,7 +82,7 @@ class Layer {
                 currentLayerNeuron.error += (outputNeuron.error * outputConnection.weight);
             });
 
-            // Get the derivative of the total error
+            // Determine the ideal change to activation to reduce our error
             currentLayerNeuron.error *= Layer.sigmoidDerivative(currentLayerNeuron.activation)
 
             // Iterate through the input neurons to adjust weights
