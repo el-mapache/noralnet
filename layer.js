@@ -30,7 +30,7 @@ class Layer {
                 sum += inputConnection.from.activation * inputConnection.weight;
             });
 
-            currentLayerNeuron.activation = currentLayerNeuron.squash(sum + currentLayerNeuron.bias);
+            currentLayerNeuron.activation = currentLayerNeuron.sigmoid(sum + currentLayerNeuron.bias);
         });
     }
 
@@ -50,7 +50,7 @@ class Layer {
             });
 
             // Get the derivative of the total error
-            currentLayerNeuron.error *= currentLayerNeuron.squash(currentLayerNeuron.error, true)
+            currentLayerNeuron.error *= currentLayerNeuron.sigmoidDerivative(currentLayerNeuron.activation)
 
             // Iterate through the input neurons to adjust weights
             currentLayerNeuron.connections.input.forEach((inputConnection) => {
@@ -97,7 +97,10 @@ class OutputLayer extends Layer {
             targetValue = this.targets[i];
             neuronActivation = currentLayerNeuron.activation;
 
-            currentLayerNeuron.error = (targetValue - neuronActivation) * currentLayerNeuron.squash(neuronActivation, true);
+            currentLayerNeuron.error = (
+                (targetValue - neuronActivation) *
+                currentLayerNeuron.sigmoidDerivative(neuronActivation)
+            );
 
             currentLayerNeuron.connections.input.forEach((inputConnection) => {
                 inputNeuron = inputConnection.from;

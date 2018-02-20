@@ -15,8 +15,16 @@ class View {
             el.style.top = ((spacing + dimensions.height) * i + verticalOffset) + 'px';
             el.style.left = ((spacing + dimensions.width) * index + horizontalOffset) + 'px';
 
-            const color = parseInt((1 + neuron.activation) * 255).toString(16);
-            el.style.backgroundColor = '#' + color + color + color;
+            let color;
+            if (neuron.activation < 0) {
+                color = parseInt(Math.abs(neuron.activation) * 255).toString(16);
+                if (color.length === 1) color = '0' + color;
+                el.style.backgroundColor = '#' + '00' + '00' + color;
+            } else {
+                color = parseInt(Math.abs(neuron.activation) * 255).toString(16);
+                if (color.length === 1) color = '0' + color;
+                el.style.backgroundColor = '#' + color + '00' + '00';
+            }
 
             body.appendChild(el);
         })
