@@ -18,6 +18,10 @@ class Trainer {
         this.featureInputs = trainingInputs;
         this.targetOutputs = trainingOutputs;
 
+        // Counters to roll over when moving over data
+        this.featureCount = 0;
+        this.targetCount = 0;
+
         // An array to hold n-numbers of hidden layers
         this.hiddenLayers = [];
     }
@@ -28,45 +32,64 @@ class Trainer {
         this.hiddenLayers.push(new Layer(hiddenNeurons));
     }
 
-    run(interval) {
+    //// Put the inputs through the system and evaluate against the outputs
+    train() {
+        // Grab this iterations features
+        const featureInputs = this.featureInputs;
+        const features = featureInputs[this.featureCount++ % featureInputs.length];
+
+        // Grab this iterations ideal output
+        const targetOutputs = this.targetOutputs;
+        const targets = targetOutputs[this.targetCount++ % targetOutputs.length];
+
+        // Start feeding forward, resolving neuron activation values
+        this.network.processInput(features);
+
+        // Compare the output against the ideal and propagate adjustments
+        // backwards
+        this.network.learn(targets);
+    }
+
+    //// Start the uninterruptable training process
+    // interval: The delay between training sessions (and visualization)
+    // initial (optional): A set of trainings to do without visualization (fast)
+    run(interval, initial) {
         let featureCount = 0,
             targetCount = 0;
+
+        // :(
+        const train = this.train.bind(this);
 
         // Get our array of layers
         const layers = [ this.inputLayer, ...this.hiddenLayers, this.outputLayer ];
 
         // Create a new network to manage these layers
-        const network = new Network(layers);
+        this.network = new Network(layers);
 
         // Get the input / output values we will iterate over
         const featureInputs = this.featureInputs;
         const targetOutputs = this.targetOutputs;
 
+        if (initial) {
+            for (let i = 0; i < initial; i++) {
+                train();
+            }
+        }
+
         // Start training
-        function trainHard() {
-            // Grab this iterations features
-            const features = featureInputs[featureCount++ % featureInputs.length];
-
-            // Grab this iterations ideal output
-            const targets = targetOutputs[targetCount++ % targetOutputs.length];
-
-            // Start feeding forward, resolving neuron activation values
-            network.processInput(features);
-
-            // Compare the output against the ideal and propagate adjustments
-            // backwards
-            network.learn(targets);
+        function visualizeTraining() {
+            train();
 
             // Visualize the neuron's and their activation
             View.clearNetwork();
             layers.forEach((layer, i) => View.displayLayer(layer, i));
 
             // Recursively train
-            setTimeout(trainHard, interval);
+            setTimeout(visualizeTraining, interval);
         }
 
         // Start training, Mac!
-        trainHard();
+        visualizeTraining();
     }
 
     //// Create an array of neurons initialized to random activations

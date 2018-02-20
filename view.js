@@ -2,10 +2,10 @@ class View {
     static clearNetwork() {
         document.getElementById('body').innerHTML = '';
     }
-    
+
     static displayLayer(layer, index) {
-        const verticalOffset = 5;
-        const horizontalOffset = 5;
+        const verticalOffset = 20;
+        const horizontalOffset = 20;
         const spacing = 20;
         const dimensions = { height: 20, width: 20 };
 

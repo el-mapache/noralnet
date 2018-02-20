@@ -50,8 +50,8 @@
                 // Trainer set up the input and output layers, so add a hidden layer
                 trainer.addLayer(6);
 
-                // Start training with 50ms intervals (so we can watch the visualization)
-                trainer.run(50);
+                // Train quickly 10,000 times, then visualize every 250ms
+                trainer.run(250, 10000);
             });
         </script>
     </head>
