@@ -1,0 +1,198 @@
+<html>
+    <head>
+        <script src="./neuron.js"></script>
+        <script src="./connection.js"></script>
+        <script src="./layer.js"></script>
+        <script src="./view.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function(event) {
+                // function setBoxColor(boxId, value) {
+                //     const box = document.getElementById(boxId);
+                //     const color = parseInt((value * 255)).toString(16);
+                //     box.style.backgroundColor= "#" + color + color + color;
+                // }
+                //
+                // function setBoxText(boxId, value) {
+                //     const box = document.getElementById(boxId);
+                //     box.innerHTML = value;
+                // }
+
+                var LEARN_RATE = 0.3;
+
+                var inputNeurons = [new Neuron(), new Neuron(), new Neuron(), new Neuron()];
+                var hiddenNeurons = [new Neuron(), new Neuron(), new Neuron(), new Neuron(), new Neuron(), new Neuron()];
+                var outputNeurons = [
+                    new Neuron(),
+                    new Neuron(),
+                    new Neuron(),
+                    new Neuron(),
+                    new Neuron(),
+                    new Neuron(),
+                    new Neuron(),
+                    new Neuron(),
+                    new Neuron(),
+                    new Neuron(),
+                    new Neuron(),
+                    new Neuron(),
+                    new Neuron(),
+                    new Neuron()
+                ];
+
+                var inputLayer = new InputLayer(inputNeurons);
+                var hiddenLayer = new Layer(hiddenNeurons);
+                var outputLayer = new OutputLayer(outputNeurons);
+
+                const targetValue = 1;
+
+                const trainingInputs = [
+                    [ 1, 1, 1, 0 ],
+                    [ 1, 1, 0, 0 ],
+                    [ 0, 1, 1, 0 ],
+                    [ 1, 0, 1, 0 ],
+                    [ 1, 0, 0, 0 ],
+                    [ 0, 1, 0, 0 ],
+                    [ 0, 0, 1, 0 ],
+                    [ 1, 1, 1, 1 ],
+                    [ 1, 1, 0, 1 ],
+                    [ 0, 1, 1, 1 ],
+                    [ 1, 0, 1, 1 ],
+                    [ 1, 0, 0, 1 ],
+                    [ 0, 1, 0, 1 ],
+                    [ 0, 0, 1, 1 ]
+                ];
+
+                const trainingOutputs = [
+                    [ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+                    [ 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+                    [ 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+                    [ 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+                    [ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+                    [ 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0 ],
+                    [ 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 ],
+                    [ 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 ],
+                    [ 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0 ],
+                    [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0 ],
+                    [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 ],
+                    [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0 ],
+                    [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0 ],
+                    [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ]
+                ];
+
+                hiddenLayer.connect(inputLayer);
+                outputLayer.connect(hiddenLayer);
+
+                const layers = [ inputLayer, hiddenLayer, outputLayer ];
+                const reverse = [ outputLayer, hiddenLayer, inputLayer ];
+
+
+                let counter = 0;
+                function train(timeout) {
+                    const flip = Math.random() > 0.5;
+                    let trainingIndex = counter++ % trainingInputs.length;
+                    inputLayer.setFeatures(trainingInputs[trainingIndex]);
+                    outputLayer.setTargets(trainingOutputs[trainingIndex]);
+                    layers.forEach((layer) => layer.feedForward());
+
+                    if (!timeout) reverse.forEach((layer) => layer.backPropagate(LEARN_RATE));
+
+                    document.getElementById('body').innerHTML = '';
+                    layers.forEach((layer, i) => View.displayLayer(layer, i));
+
+                    // if (Math.abs((flip ? targetSetA[0] : targetSetB[0]) - outputLayer.neurons[0].activation) < 0.01 &&
+                    //     Math.abs((flip ? targetSetA[1] : targetSetB[1]) - outputLayer.neurons[1].activation) < 0.01) {
+                    //     setBoxColor('target', 1);
+                    // } else {
+                    setTimeout(function() { train(true); }, 10);
+                    //}
+                }
+                train();
+
+                // console.log('BEFORE FEED FORWARD');
+                // logLayer(hiddenLayer);
+                //
+                // hiddenLayer.feedForward();
+                //
+                // console.log('BEFORE BACK PROP');
+                // logLayer(hiddenLayer);
+                //
+                // hiddenLayer.backPropagate(LEARN_RATE);
+                //
+                // console.log('AFTER BACK PROP');
+                // logLayer(hiddenLayer);
+                //
+                // function logLayer(layer) {
+                //     const inputWeights = [];
+                //     const outputWeights = [];
+                //     const errors = [];
+                //     const activations = [];
+                //
+                //     layer.neurons.forEach((neuron) => {
+                //         errors.push(neuron.error);
+                //         activations.push(neuron.activation);
+                //         neuron.connections.input.forEach((inputConnection) => {
+                //             inputWeights.push(inputConnection.weight);
+                //         });
+                //
+                //         neuron.connections.output.forEach((outputConnection) => {
+                //             outputWeights.push(outputConnection.weight);
+                //         });
+                //     })
+                //
+                //     console.log('input weights', JSON.stringify(inputWeights));
+                //     console.log('output weights', JSON.stringify(inputWeights));
+                //     console.log('activations', JSON.stringify(activations));
+                //     console.log('errors', JSON.stringify(errors));
+                // }
+            });
+        </script>
+        <style>
+            body {
+                background-color: #333333;
+            }
+            .box {
+                position: absolute;
+                top: 20px;
+                left: 20px;
+                width: 100px;
+                height: 100px;
+                color: red;
+            }
+
+            .box2 {
+                top: 220px;
+                left: 20px;
+            }
+
+            .box3 {
+                top: 20px;
+                left: 220px;
+            }
+
+            .box4 {
+                top: 220px;
+                left: 220px;
+            }
+            .box5 {
+                top: 20px;
+                left: 420px;
+            }
+            .box6 {
+                top: 220px;
+                left: 420px;
+            }
+            .target {
+                top: 220px;
+                left: 620px;
+            }
+        </style>
+    </head>
+    <body id="body">
+        <div class="box" id="1"></div>
+        <div class="box box2" id="2"></div>
+        <div class="box box3" id="3"></div>
+        <div class="box box4" id="4"></div>
+        <div class="box box5" id="5"></div>
+        <div class="box box6" id="6"></div>
+        <div class="box target" id="target"></div>
+    </body>
+</html>
