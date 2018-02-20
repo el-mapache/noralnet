@@ -45,8 +45,7 @@ class Trainer {
         // Start feeding forward, resolving neuron activation values
         this.network.processInput(features);
 
-        // Compare the output against the ideal and propagate adjustments
-        // backwards
+        // Compare the output against the ideal and propagate adjustments backwards
         this.network.learn(targets);
     }
 
@@ -70,7 +69,9 @@ class Trainer {
         const featureInputs = this.featureInputs;
         const targetOutputs = this.targetOutputs;
 
+        // Check if we should train initial before visualization
         if (initial) {
+            // Train without drawing for a set amount
             for (let i = 0; i < initial; i++) {
                 train();
             }
