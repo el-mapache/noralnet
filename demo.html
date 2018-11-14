@@ -45,13 +45,22 @@
 
             document.addEventListener("DOMContentLoaded", function(event) {
                 // Helper class to tie everything together
-                const trainer = new Trainer(TRAINING_INPUTS, TRAINING_OUTPUTS);
+                const trainer = new Trainer(TRAINING_INPUTS[0].length, TRAINING_OUTPUTS[0].length);
 
                 // Trainer set up the input and output layers, so add a hidden layer
                 trainer.addLayer(6);
+                trainer.createNetwork();
 
-                // Train quickly 10,000 times, then visualize every 250ms
-                trainer.run(250, 10000);
+                let featureIndex = 0;
+                let predictionIndex = 0;
+
+                window.trainer = trainer;
+
+                setInterval(() => {
+                    if (++featureIndex > TRAINING_INPUTS.length - 1) featureIndex = 0;
+                    trainer.run(TRAINING_INPUTS[featureIndex], TRAINING_OUTPUTS[featureIndex]);
+                }, 5);
+                
             });
         </script>
     </head>

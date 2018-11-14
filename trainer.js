@@ -5,18 +5,14 @@
 class Trainer {
     // trainingInputs: The initial input values the inform neuron activation
     // trainingOutputs: The ideal values to compare against the output layer
-    constructor(trainingInputs, trainingOutputs) {
+    constructor(inputLength, outputLength) {
         // Set an input layer sized to a feature set
-        const inputNeurons = Trainer.createNeuronArray(trainingInputs[0].length);
+        const inputNeurons = Trainer.createNeuronArray(inputLength);
         this.inputLayer = new InputLayer(inputNeurons);
 
         // Set an output layer sized to a target value set
-        const outputNeurons = Trainer.createNeuronArray(trainingOutputs[0].length);
+        const outputNeurons = Trainer.createNeuronArray(outputLength);
         this.outputLayer = new OutputLayer(outputNeurons);
-
-        // Set the inputs and outputs to pull from during training
-        this.featureInputs = trainingInputs;
-        this.targetOutputs = trainingOutputs;
 
         // Counters to roll over when moving over data
         this.featureCount = 0;
@@ -33,15 +29,7 @@ class Trainer {
     }
 
     //// Put the inputs through the system and evaluate against the outputs
-    train() {
-        // Grab this iterations features
-        const featureInputs = this.featureInputs;
-        const features = featureInputs[this.featureCount++ % featureInputs.length];
-
-        // Grab this iterations ideal output
-        const targetOutputs = this.targetOutputs;
-        const targets = targetOutputs[this.targetCount++ % targetOutputs.length];
-
+    train(features, targets) {
         // Start feeding forward, resolving neuron activation values
         this.network.processInput(features);
 
@@ -49,48 +37,39 @@ class Trainer {
         this.network.learn(targets);
     }
 
+    createNetwork() {
+        // Get our array of layers
+        const layers = [ this.inputLayer, ...this.hiddenLayers, this.outputLayer ];
+
+        this.network = new Network(layers)
+    }
+
     //// Start the uninterruptable training process
     // interval: The delay between training sessions (and visualization)
     // initial (optional): A set of trainings to do without visualization (fast)
-    run(interval, initial) {
+    run(feature, target) {
         let featureCount = 0,
             targetCount = 0;
-
-        // :(
-        const train = this.train.bind(this);
 
         // Get our array of layers
         const layers = [ this.inputLayer, ...this.hiddenLayers, this.outputLayer ];
 
-        // Create a new network to manage these layers
-        this.network = new Network(layers);
+        this.train(feature, target);
 
-        // Get the input / output values we will iterate over
-        const featureInputs = this.featureInputs;
-        const targetOutputs = this.targetOutputs;
+        // Visualize the neuron's and their activation
+        View.clearNetwork();
+        layers.forEach((layer, i) => View.displayLayer(layer, i));
+    }
 
-        // Check if we should train initial before visualization
-        if (initial) {
-            // Train without drawing for a set amount
-            for (let i = 0; i < initial; i++) {
-                train();
-            }
-        }
+    predict(features) {
+        this.network.processInput(features);
 
-        // Start training
-        function visualizeTraining() {
-            train();
+        const outputs = [];
+        this.network.outputLayer.neurons.forEach((neuron) => {
+            outputs.push(neuron.activation);
+        })
 
-            // Visualize the neuron's and their activation
-            View.clearNetwork();
-            layers.forEach((layer, i) => View.displayLayer(layer, i));
-
-            // Recursively train
-            setTimeout(visualizeTraining, interval);
-        }
-
-        // Start training, Mac!
-        visualizeTraining();
+        console.log(outputs);
     }
 
     //// Create an array of neurons initialized to random activations
